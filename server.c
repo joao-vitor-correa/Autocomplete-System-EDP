@@ -28,15 +28,23 @@ int main()
     socklen_t addrlen = sizeof(address);
     char buffer[1024] = {0};
 
-    const char *response_template =
+    const char *html_response =
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/html\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
         "Connection: close\r\n"
         "\r\n"
         "<h1>Servidor HTTP funcionando!</h1>";
 
+    const char *ping_response =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: application/json\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "Connection: close\r\n"
+        "\r\n"
+        "{\"response\":\"pong\"}";
+
 #ifdef _WIN32
-    // Inicializa a Winsock
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
     {
@@ -45,7 +53,6 @@ int main()
     }
 #endif
 
-    // Cria o socket
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (SOCKET_ERROR_CHECK(server_fd))
     {
@@ -65,9 +72,6 @@ int main()
     {
         perror("Erro no bind");
         CLOSESOCKET(server_fd);
-#ifdef _WIN32
-        WSACleanup();
-#endif
         return 1;
     }
 
@@ -75,9 +79,6 @@ int main()
     {
         perror("Erro no listen");
         CLOSESOCKET(server_fd);
-#ifdef _WIN32
-        WSACleanup();
-#endif
         return 1;
     }
 
@@ -85,6 +86,8 @@ int main()
 
     while (1)
     {
+        memset(buffer, 0, sizeof(buffer));
+
         new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
         if (SOCKET_ERROR_CHECK(new_socket))
         {
@@ -95,7 +98,14 @@ int main()
         recv(new_socket, buffer, sizeof(buffer) - 1, 0);
         printf("Requisição recebida:\n%s\n", buffer);
 
-        send(new_socket, response_template, strlen(response_template), 0);
+        if (strncmp(buffer, "GET /ping", 9) == 0)
+        {
+            send(new_socket, ping_response, strlen(ping_response), 0);
+        }
+        else
+        {
+            send(new_socket, html_response, strlen(html_response), 0);
+        }
 
         CLOSESOCKET(new_socket);
     }
