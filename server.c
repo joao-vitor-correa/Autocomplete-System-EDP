@@ -31,13 +31,16 @@ NoAVL *raiz = NULL;
 void carregar_dados()
 {
     const char *lista[] = {
-        "abacate", "abacaxi", "abakashi", "abiu", "abrico", "acai", "acerola", "amora",
-        "ameixa", "araca", "araticum", "banana", "bergamota", "bacuri", "buriti", "caju",
-        "caqui", "cereja", "cupuaçu", "damasco", "figo", "framboesa", "goiaba", "graviola",
-        "groselha", "jabuticaba", "jaca", "jambo", "jenipapo", "kiwi", "laranja", "limao",
-        "lima", "maca", "mamao", "manga", "maracuja", "melancia", "melao", "morango",
-        "nectarina", "pera", "pessego", "pitanga", "pitaya", "seriguela", "tamarindo",
-        "tangerina", "umbu", "uva"};
+        "abacate", "abacaxi", "abrico", "acai", "acerola", "amora", "pera",
+        "ameixa", "araca", "araticum", "bacaba", "bacuri", "banana",
+        "buriti", "caja", "caju", "camucamu", "carambola", "ciriguela",
+        "cupuaçu", "damasco", "figo",
+        "framboesa-do-mato", "goiaba", "graviola", "groselha",
+        "jabuticaba", "jaca", "jambo", "jenipapo", "jiricó",
+        "laranja-lima", "limao-cravo", "mamao",
+        "manga", "maracuja", "murici", "umbu", "uvaia",
+        "pitanga", "pitaya-brasileira", "pequi", "pinha",
+        "seriguela", "tamarindo", "tucumã", "uva-do-japao"};
 
     int total = sizeof(lista) / sizeof(lista[0]);
 
