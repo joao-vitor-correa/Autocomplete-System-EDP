@@ -18,8 +18,36 @@
 #define SOCKET_ERROR_CHECK(x) ((x) < 0)
 #endif
 
-#define PORT 8080
+#include "autocomplete.h"
 
+#define PORT 8080
+#define TAM_MAX 128
+
+// ========================
+// BASE DE DADOS GLOBAL (servidor controla a raiz)
+// ========================
+NoAVL *raiz = NULL;
+
+void carregar_dados()
+{
+    const char *lista[] = {
+        "abacate", "abacaxi", "abakashi", "abiu", "abrico", "acai", "acerola", "amora",
+        "ameixa", "araca", "araticum", "banana", "bergamota", "bacuri", "buriti", "caju",
+        "caqui", "cereja", "cupuaçu", "damasco", "figo", "framboesa", "goiaba", "graviola",
+        "groselha", "jabuticaba", "jaca", "jambo", "jenipapo", "kiwi", "laranja", "limao",
+        "lima", "maca", "mamao", "manga", "maracuja", "melancia", "melao", "morango",
+        "nectarina", "pera", "pessego", "pitanga", "pitaya", "seriguela", "tamarindo",
+        "tangerina", "umbu", "uva"};
+
+    int total = sizeof(lista) / sizeof(lista[0]);
+
+    for (int i = 0; i < total; i++)
+        raiz = inserirAVL(raiz, lista[i]);
+}
+
+// ========================
+// ENVIO DE ARQUIVOS HTML
+// ========================
 void send_file(SOCKET client, const char *filepath)
 {
     FILE *file = fopen(filepath, "rb");
@@ -57,13 +85,16 @@ void send_file(SOCKET client, const char *filepath)
     fclose(file);
 }
 
+// ========================
+// MAIN SERVIDOR
+// ========================
 int main()
 {
     SOCKET server_fd, new_socket;
     struct sockaddr_in address;
     int opt = 1;
     socklen_t addrlen = sizeof(address);
-    char buffer[2048];
+    char buffer[4096];
 
     const char *ping_response =
         "HTTP/1.1 200 OK\r\n"
@@ -81,6 +112,8 @@ int main()
         return 1;
     }
 #endif
+
+    carregar_dados(); // <-- inicializa o autocomplete
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (SOCKET_ERROR_CHECK(server_fd))
@@ -124,30 +157,109 @@ int main()
             continue;
         }
 
-        printf("Requisição:\n%s\n", buffer);
+        // Imprime o request inteiro para debug
+        printf("=== REQUEST BEGIN ===\n%s\n=== REQUEST END ===\n", buffer);
 
-        if (strncmp(buffer, "GET /ping", 9) == 0)
+        // ========================
+        // ROTAS
+        // ========================
+
+        if (strncmp(buffer, "GET /ping", strlen("GET /ping")) == 0)
         {
             send(new_socket, ping_response, (int)strlen(ping_response), 0);
         }
-        else if (strncmp(buffer, "GET / HTTP", 10) == 0)
+        // ROTA DE DEBUG: /debbugin
+        else if (strncmp(buffer, "GET /debbugin?term=", strlen("GET /debbugin?term=")) == 0)
+        {
+            char termo[TAM_MAX] = {0};
+            // lê até o espaço (HTTP/1.1)
+            sscanf(buffer, "GET /debbugin?term=%127[^ ]", termo);
+
+            // imprime no servidor (debug)
+            printf("[DEBUG] rota /debbugin acionada\n");
+            printf("[DEBUG] termo parseado: '%s'\n", termo);
+
+            char resultados[3][TAM_MAX];
+            int qtd = autocompleteAVL(raiz, termo, resultados);
+
+            // montar JSON de debug com raw_request (tamanho limitado)
+            char raw_clip[1024] = {0};
+            strncpy(raw_clip, buffer, sizeof(raw_clip) - 1);
+
+            // calcular tamanho suficiente para resposta
+            char resposta[2048];
+            int pos = 0;
+
+            pos += snprintf(resposta + pos, sizeof(resposta) - pos,
+                            "HTTP/1.1 200 OK\r\n"
+                            "Content-Type: application/json\r\n"
+                            "Access-Control-Allow-Origin: *\r\n"
+                            "Connection: close\r\n"
+                            "\r\n"
+                            "{ \"route\": \"/debbugin\", \"term\": \"%s\", \"qtd\": %d, \"resultados\": [",
+                            termo, qtd);
+
+            for (int i = 0; i < qtd; i++)
+            {
+                pos += snprintf(resposta + pos, sizeof(resposta) - pos,
+                                "\"%s\"%s", resultados[i], (i < qtd - 1) ? "," : "");
+            }
+
+            pos += snprintf(resposta + pos, sizeof(resposta) - pos,
+                            "], \"raw_request\": \"%s\" }",
+                            raw_clip);
+
+            send(new_socket, resposta, (int)strlen(resposta), 0);
+        }
+        else if (strncmp(buffer, "GET /autocomplete?term=", strlen("GET /autocomplete?term=")) == 0)
+        {
+            // ainda aceitamos a rota antiga caso precise testar
+            char termo[TAM_MAX] = {0};
+            sscanf(buffer, "GET /autocomplete?term=%127[^ ]", termo);
+            printf("[DEBUG] rota /autocomplete acionada (fallback). termo='%s'\n", termo);
+
+            char resultados[3][TAM_MAX];
+            int qtd = autocompleteAVL(raiz, termo, resultados);
+
+            char resposta[512];
+            strcpy(resposta,
+                   "HTTP/1.1 200 OK\r\n"
+                   "Content-Type: application/json\r\n"
+                   "Access-Control-Allow-Origin: *\r\n"
+                   "\r\n");
+
+            strcat(resposta, "{ \"resultados\": [");
+            for (int i = 0; i < qtd; i++)
+            {
+                strcat(resposta, "\"");
+                strcat(resposta, resultados[i]);
+                strcat(resposta, "\"");
+                if (i < qtd - 1)
+                    strcat(resposta, ",");
+            }
+            strcat(resposta, "] }");
+
+            send(new_socket, resposta, (int)strlen(resposta), 0);
+        }
+        else if (strncmp(buffer, "GET / HTTP", strlen("GET / HTTP")) == 0)
         {
             send_file(new_socket, "Front-end/index.html");
         }
-        else if (strncmp(buffer, "GET /test", 9) == 0)
+        else if (strncmp(buffer, "GET /test", strlen("GET /test")) == 0)
         {
             send_file(new_socket, "Front-end/test.html");
         }
-        else if (strncmp(buffer, "GET /chat", 9) == 0)
+        else if (strncmp(buffer, "GET /chat", strlen("GET /chat")) == 0)
         {
             send_file(new_socket, "Front-end/chat.html");
         }
-        else if (strncmp(buffer, "GET /fruits", 11) == 0)
+        else if (strncmp(buffer, "GET /fruits", strlen("GET /fruits")) == 0)
         {
             send_file(new_socket, "Front-end/fruits.html");
         }
         else
         {
+            // fallback
             send_file(new_socket, "Front-end/index.html");
         }
 
