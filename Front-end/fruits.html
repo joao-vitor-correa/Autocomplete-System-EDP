@@ -9,7 +9,7 @@
 <body class="bg-gradient-to-b from-lime-200 to-green-300 min-h-screen text-gray-900">
   <!-- Header -->
   <header class="w-full bg-green-700 text-white p-6 shadow-xl flex justify-between items-center">
-    <h1 class="text-3xl font-bold">🍉 Fruteira Delícia</h1>
+    <h1 class="text-3xl font-bold">🍉 Fruteira</h1>
     <nav class="flex gap-6 text-lg">
       <a href="#home" class="hover:text-yellow-300">Início</a>
       <a href="#produtos" class="hover:text-yellow-300">Produtos</a>
@@ -33,14 +33,15 @@
       <input id="fruitInput" type="text" placeholder="Digite o nome de uma fruta..." class="w-full h-12 px-4 rounded-xl border border-green-700 focus:ring-2 focus:ring-green-600" />
 
       <!-- Autocomplete box -->
-      <div id="autoBox" class="absolute w-full mt-2 hidden">
-        <div class="bg-white rounded-xl shadow-lg border border-green-600 divide-y divide-green-300 overflow-hidden">
-          <div id="word1" class="p-3 hover:bg-green-100 cursor-pointer"></div>
-          <div id="word2" class="p-3 hover:bg-green-100 cursor-pointer"></div>
-          <div id="word3" class="p-3 hover:bg-green-100 cursor-pointer"></div>
+      <div id="autoBox" class="absolute w-full mt-2 hidden z-10">
+        <div class="bg-white rounded-xl shadow-lg border border-green-600 overflow-hidden" id="suggestionsContainer">
+          <!-- As sugestões serão inseridas aqui dinamicamente -->
         </div>
       </div>
     </div>
+
+    <!-- Status da API -->
+    <div id="apiStatus" class="mt-4 text-sm text-gray-600"></div>
   </section>
 
   <!-- Produtos -->
@@ -49,17 +50,20 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
       <div class="bg-white rounded-xl shadow-lg p-4 text-center">
-        <img src="https://images.unsplash.com/photo-1574226516831-e1dff420e43e?auto=format&fit=crop&w=600&q=60" class="w-full h-40 object-cover rounded-md" />
+        <img src="https://www.ceasa-ce.com.br/wp-content/uploads/sites/87/2019/09/morango.jpg 
+" class="w-full h-40 object-cover rounded-md" />
         <p class="mt-2 font-semibold text-lg">Morangos Frescos</p>
       </div>
 
       <div class="bg-white rounded-xl shadow-lg p-4 text-center">
-        <img src="https://images.unsplash.com/photo-1571689936040-6c3b47a5a5f9?auto=format&fit=crop&w=600&q=60" class="w-full h-40 object-cover rounded-md" />
+        <img src="https://cloudfront-us-east-1.images.arcpublishing.com/estadao/CU6HU7WMEVF2THSPFT7RBQXFWM.jpeg
+" class="w-full h-40 object-cover rounded-md" />
         <p class="mt-2 font-semibold text-lg">Bananas Orgânicas</p>
       </div>
 
       <div class="bg-white rounded-xl shadow-lg p-4 text-center">
-        <img src="https://images.unsplash.com/photo-1580910051074-3eb694886d95?auto=format&fit=crop&w=600&q=60" class="w-full h-40 object-cover rounded-md" />
+        <img src="https://s2-ge.glbimg.com/BRPoZyCmhgXOS42hVatrweAwLiQ=/0x0:620x455/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_bc8228b6673f488aa253bbcb03c80ec5/internal_photos/bs/2022/u/n/ppIYgoT2GGK0y2xyvbSg/manga.jpeg
+" class="w-full h-40 object-cover rounded-md" />
         <p class="mt-2 font-semibold text-lg">Mangas Docinhas</p>
       </div>
     </div>
@@ -71,7 +75,105 @@
     <p>© 2025 Fruteira Delícia</p>
   </footer>
 
-  <!-- SEU JS EXTERNO -->
-  <script src="main.js" defer></script>
+  <!-- JAVASCRIPT -->
+  <script>
+  const input = document.getElementById("fruitInput");
+  const autoBox = document.getElementById("autoBox");
+  const suggestionsContainer = document.getElementById("suggestionsContainer");
+  const apiStatus = document.getElementById("apiStatus");
+
+  // Limpar sugestões
+  function limpar() {
+    suggestionsContainer.innerHTML = "";
+    autoBox.classList.add("hidden");
+  }
+
+  // Preencher sugestões
+  function preencher(lista) {
+    // Limpa o container primeiro
+    suggestionsContainer.innerHTML = "";
+    
+    // Se não há sugestões, esconde o box
+    if (!lista || lista.length === 0) {
+      limpar();
+      return;
+    }
+
+    // Cria um elemento para cada sugestão
+    lista.forEach((sugestao) => {
+      const div = document.createElement("div");
+      div.className = "p-3 hover:bg-green-100 cursor-pointer border-b border-green-200 last:border-b-0";
+      div.textContent = sugestao;
+      
+      // Adiciona evento de clique
+      div.onclick = () => {
+        input.value = sugestao;
+        limpar();
+      };
+      
+      suggestionsContainer.appendChild(div);
+    });
+
+    // Mostra o box
+    autoBox.classList.remove("hidden");
+  }
+
+  // Debounce para evitar muitas requisições
+  let timeoutId;
+  
+  input.addEventListener("input", async (e) => {
+    const termo = e.target.value.trim();
+
+    // Limpa o timeout anterior
+    clearTimeout(timeoutId);
+
+    if (!termo) {
+      limpar();
+      apiStatus.textContent = "";
+      return;
+    }
+
+    // Aguarda 300ms antes de fazer a requisição
+    timeoutId = setTimeout(async () => {
+      try {
+        console.log("Buscando na API:", termo);
+        
+        const res = await fetch(`http://localhost:8080/autocomplete?term=${encodeURIComponent(termo)}`);
+        
+        if (!res.ok) {
+          throw new Error(`Erro HTTP: ${res.status}`);
+        }
+        
+        const lista = await res.json();
+        console.log("Resposta da API:", lista);
+
+         console.log(lista.resultados);
+        preencher(lista.resultados);
+        
+      } catch (err) {
+        console.error("Erro na API:", err);
+        apiStatus.textContent = "❌ Erro ao buscar sugestões";
+        limpar();
+      }
+    }, 300);
+  });
+
+  // Fechar autocomplete ao clicar fora
+  document.addEventListener("click", (e) => {
+    if (!input.contains(e.target) && !autoBox.contains(e.target)) {
+      limpar();
+    }
+  });
+
+  // Navegação por teclado (opcional)
+  input.addEventListener("keydown", (e) => {
+    const items = suggestionsContainer.querySelectorAll("div");
+    
+    if (e.key === "Escape") {
+      limpar();
+    }
+  });
+  </script>
+
 </body>
 </html>
