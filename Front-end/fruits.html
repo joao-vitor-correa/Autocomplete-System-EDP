@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fruteira Delícia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-b from-lime-200 to-green-300 min-h-screen text-gray-900">
+  <!-- Header -->
+  <header class="w-full bg-green-700 text-white p-6 shadow-xl flex justify-between items-center">
+    <h1 class="text-3xl font-bold">🍉 Fruteira Delícia</h1>
+    <nav class="flex gap-6 text-lg">
+      <a href="#home" class="hover:text-yellow-300">Início</a>
+      <a href="#produtos" class="hover:text-yellow-300">Produtos</a>
+      <a href="#contato" class="hover:text-yellow-300">Contato</a>
+    </nav>
+  </header>
+
+  <!-- Banner -->
+  <section id="home" class="w-full h-72 bg-[url('https://images.unsplash.com/photo-1579613832125-5d34a13ffe75?auto=format&fit=crop&w=1200&q=60')] bg-cover bg-center flex items-center justify-center">
+    <div class="bg-white/70 backdrop-blur-md p-10 rounded-2xl shadow-2xl text-center">
+      <h2 class="text-4xl font-bold mb-2">As frutas mais frescas da cidade 🍓</h2>
+      <p class="text-lg">Escolha suas frutas favoritas com nosso buscador inteligente!</p>
+    </div>
+  </section>
+
+  <!-- Busca com Autocomplete -->
+  <section class="max-w-3xl mx-auto mt-10 p-6">
+    <h2 class="text-2xl font-bold mb-4">🔍 Buscar fruta</h2>
+
+    <div class="relative">
+      <input id="fruitInput" type="text" placeholder="Digite o nome de uma fruta..." class="w-full h-12 px-4 rounded-xl border border-green-700 focus:ring-2 focus:ring-green-600" />
+
+      <!-- Autocomplete box -->
+      <div id="autoBox" class="absolute w-full mt-2 hidden">
+        <div class="bg-white rounded-xl shadow-lg border border-green-600 divide-y divide-green-300 overflow-hidden">
+          <div id="word1" class="p-3 hover:bg-green-100 cursor-pointer"></div>
+          <div id="word2" class="p-3 hover:bg-green-100 cursor-pointer"></div>
+          <div id="word3" class="p-3 hover:bg-green-100 cursor-pointer"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Produtos -->
+  <section id="produtos" class="max-w-5xl mx-auto mt-16 p-6">
+    <h2 class="text-3xl font-bold mb-6">🥭 Nossos Produtos</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+        <img src="https://images.unsplash.com/photo-1574226516831-e1dff420e43e?auto=format&fit=crop&w=600&q=60" class="w-full h-40 object-cover rounded-md" />
+        <p class="mt-2 font-semibold text-lg">Morangos Frescos</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+        <img src="https://images.unsplash.com/photo-1571689936040-6c3b47a5a5f9?auto=format&fit=crop&w=600&q=60" class="w-full h-40 object-cover rounded-md" />
+        <p class="mt-2 font-semibold text-lg">Bananas Orgânicas</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-4 text-center">
+        <img src="https://images.unsplash.com/photo-1580910051074-3eb694886d95?auto=format&fit=crop&w=600&q=60" class="w-full h-40 object-cover rounded-md" />
+        <p class="mt-2 font-semibold text-lg">Mangas Docinhas</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contato" class="mt-20 bg-green-700 text-white p-6 text-center">
+    <p class="text-lg">📞 Contato: (41) 90000-0000</p>
+    <p>© 2025 Fruteira Delícia</p>
+  </footer>
+
+  <!-- SEU JS EXTERNO -->
+  <script src="main.js" defer></script>
+</body>
+</html>
