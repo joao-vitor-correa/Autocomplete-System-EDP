@@ -30,26 +30,26 @@ NoAVL *raiz = NULL;
 
 void carregar_dados()
 {
-    const char *lista[] = {"abacate", "abacaxi", "abiu", "açaí", "acerola", "acelora-do-mato", "ackee", "african-cucumber",
+    const char *lista[] = {"abacate", "abacaxi", "abiu", "acai", "acerola", "acelora-do-mato", "ackee", "african-cucumber",
                            "aguai", "agresta", "aguaviva", "alfarroba", "ameixa", "ameixa-amarela", "ameixa-de-natal",
                            "ameixa-japonesa", "ameixa-roxa", "amêndoa", "amora", "amora-branca", "amora-preta", "amora-vermelha",
-                           "araticum", "araticum-do-brejo", "araucária-fruto", "araticum-cagão", "abiu-grande",
+                           "araticum", "araticum-do-brejo", "araucária-fruto", "araticum-cagao", "abiu-grande",
                            "ata", "ata-brava", "atemoia", "avelã",
 
-                           "banana", "banana-maçã", "banana-nanica", "banana-prata", "banana-da-terra", "banana-ouro",
+                           "banana", "banana-maca", "banana-nanica", "banana-prata", "banana-da-terra", "banana-ouro",
                            "bacaba", "bacabinha", "bacuri", "bacupari", "bambu-fruta", "baru", "bergamota",
                            "bergamota-murro", "biribá", "bilberry", "black-sapote", "blueberry", "boysenberry",
                            "buriti", "butiá", "butiá-do-cerrado",
 
-                           "cabeludinha", "cacau", "cagaita", "cagaitinha", "cajá", "cajá-manga", "cajá-umbu", "caju",
+                           "cabeludinha", "cacau", "cagaita", "cagaitinha", "cajá", "cajá-manga", "caja-umbu", "caju",
                            "calabura", "camapu", "cambuci", "camu-camu", "caqui", "carambola", "carnaúba-fruto",
-                           "castanha-portuguesa", "castanha-do-pará", "cereja", "cereja-do-rio-grande",
+                           "castanha-portuguesa", "castanha-do-para", "cereja", "cereja-do-rio-grande",
                            "cereja-de-pitanga", "cereja-europeia", "cereja-negra", "cereja-amarela",
-                           "cirigüela", "coco", "coco-verde", "coco-anão",
-                           "cranberry", "cupuaçu", "curuba", "curriola",
+                           "ciriguela", "coco", "coco-verde", "coco-anão",
+                           "cranberry", "cupuacu", "curuba", "curriola",
 
                            "damasco", "damasco-negro", "damasco-siberiano", "dekopon", "desert-lime",
-                           "doce-de-abelha-fruto", "dragon-fruit", "durião",
+                           "doce-de-abelha-fruto", "dragon-fruit", "duriao",
 
                            "embaúba-fruto", "embaubarana", "embaúba-do-brejo", "embiriba",
                            "enset", "esfregadinha-fruto", "etrog",
@@ -68,10 +68,10 @@ void carregar_dados()
 
                            "ilama", "ingá", "ingá-de-metro", "ingá-do-brejo", "ingá-mirim", "ixi-pixi",
 
-                           "jabuticaba", "jabuticaba-sabará", "jabuticaba-branca", "jabuticaba-açu",
+                           "jabuticaba", "jabuticaba-sabará", "jabuticaba-branca", "jabuticaba-acu",
                            "jaca", "jaca-mole", "jaca-dura", "jambo", "jambo-vermelho", "jambo-amarelo",
                            "jamelão", "jenipapo", "jerivá-fruto", "jiripoca-fruto", "juá", "jujuba",
-                           "juçara (fruto da palmeira)",
+                           "jucara (fruto da palmeira)",
 
                            "kiwano", "kiwi", "kiwi-amarelo", "kumquat",
 
@@ -79,7 +79,7 @@ void carregar_dados()
                            "laranja-sanguínea", "lichia", "limão", "limão-siciliano", "limão-taiti", "limequat",
                            "longan", "loquat (nêspera)", "lulo", "lucuma",
 
-                           "maçã", "maçã-verde", "maçã-gala", "maçã-fuji", "maçã-red-delicious", "maçã-brava",
+                           "macã", "macã-verde", "macã-gala", "macã-fuji", "macã-red-delicious", "macã-brava",
                            "mamão", "mamão-formosa", "mamey", "mangaba", "manga", "manga-tommy", "manga-palmer",
                            "manga-haden", "manga-espada", "mangostão", "maracujá", "maracujá-doce", "maracujá-roxo",
                            "melancia", "melão", "melão-gália", "melão-orange", "melão-amarelo",
@@ -180,7 +180,7 @@ int main()
 
     const char *ping_response =
         "HTTP/1.1 200 OK\r\n"
-        "Content-Type: application/json\r\n"
+        "Content-Type: application/json; charset=utf-8\r\n"
         "Access-Control-Allow-Origin: *\r\n"
         "Connection: close\r\n"
         "\r\n"
@@ -254,7 +254,7 @@ int main()
         else if (strncmp(buffer, "GET /debbugin?term=", strlen("GET /debbugin?term=")) == 0)
         {
             char termo[TAM_MAX] = {0};
-            // lê até o espaço (HTTP/1.1)
+            // lê até o espaco (HTTP/1.1)
             sscanf(buffer, "GET /debbugin?term=%127[^ ]", termo);
 
             // imprime no servidor (debug)
@@ -274,7 +274,7 @@ int main()
 
             pos += snprintf(resposta + pos, sizeof(resposta) - pos,
                             "HTTP/1.1 200 OK\r\n"
-                            "Content-Type: application/json\r\n"
+                            "Content-Type: application/json; charset=utf-8\r\n"
                             "Access-Control-Allow-Origin: *\r\n"
                             "Connection: close\r\n"
                             "\r\n"
@@ -306,7 +306,7 @@ int main()
             char resposta[512];
             strcpy(resposta,
                    "HTTP/1.1 200 OK\r\n"
-                   "Content-Type: application/json\r\n"
+                   "Content-Type: application/json; charset=utf-8\r\n"
                    "Access-Control-Allow-Origin: *\r\n"
                    "\r\n");
 
