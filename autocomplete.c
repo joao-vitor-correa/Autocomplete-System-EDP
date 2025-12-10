@@ -90,6 +90,25 @@ static int comparar(const char *a, const char *b)
 }
 
 // ========================
+// IMPRESSÃO DA ÁRVORE AVL
+// ========================
+
+static void imprimirAVL(const NoAVL *r, int nivel)
+{
+    if (!r)
+        return;
+
+    imprimirAVL(r->dir, nivel + 1);
+
+    for (int i = 0; i < nivel; i++)
+        printf("    ");
+
+    printf("%s (h=%d)\n", r->palavra, r->altura);
+
+    imprimirAVL(r->esq, nivel + 1);
+}
+
+// ========================
 // FUNÇÃO DE INSERÇÃO AVL
 // ========================
 NoAVL *inserirAVL(NoAVL *no, const char *palavra)
@@ -164,15 +183,22 @@ static void coletarPrefixo(NoAVL *r, const char *prefixo,
     if (!r || *qtd >= 3)
         return;
 
-    // Percorre em ordem (ordenado alfabeticamente)
+    printf("\n--- Percorrendo nó atual: %s ---\n", r->palavra);
+    imprimirAVL(r, 0);
+    printf("---------------------------------\n\n");
+
     coletarPrefixo(r->esq, prefixo, res, qtd);
 
-    // Se ainda tem espaço e a palavra combina com o prefixo
     if (*qtd < 3 && comecaCom(r->palavra, prefixo))
     {
         strncpy(res[*qtd], r->palavra, TAM_MAX - 1);
         res[*qtd][TAM_MAX - 1] = '\0';
         (*qtd)++;
+
+        printf(">> Palavra coletada: %s\n", r->palavra);
+        printf(">> Total coletado: %d\n", *qtd);
+
+        imprimirAVL(r, 0);
     }
 
     coletarPrefixo(r->dir, prefixo, res, qtd);
